@@ -73,10 +73,6 @@ ifneq ($(TARGET_BUILD_VARIANT),eng)
 ADDITIONAL_DEFAULT_PROPERTIES += ro.adb.secure=1
 endif
 
-# Copy over the changelog to the device
-PRODUCT_COPY_FILES += \
-    vendor/cm/CHANGELOG.mkdn:system/etc/CHANGELOG-CM.txt
-
 # Backup Tool
 ifneq ($(WITH_GMS),true)
 PRODUCT_COPY_FILES += \
@@ -231,9 +227,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 DEVICE_PACKAGE_OVERLAYS += vendor/cm/overlay/common
 
-PRODUCT_VERSION_MAJOR = 13
-PRODUCT_VERSION_MINOR = 0
-PRODUCT_VERSION_MAINTENANCE = 0-RC0
+PRODUCT_VERSION_MAJOR = 1
 
 # Set CM_BUILDTYPE from the env RELEASE_TYPE, for jenkins compat
 
@@ -247,7 +241,7 @@ endif
 
 # Filter out random types, so it'll reset to UNOFFICIAL
 ifeq ($(filter RELEASE NIGHTLY SNAPSHOT EXPERIMENTAL,$(CM_BUILDTYPE)),)
-    CM_BUILDTYPE :=
+    CM_BUILDTYPE := RELEASE
 endif
 
 ifdef CM_BUILDTYPE
@@ -273,7 +267,7 @@ ifdef CM_BUILDTYPE
     endif
 else
     # If CM_BUILDTYPE is not defined, set to UNOFFICIAL
-    CM_BUILDTYPE := UNOFFICIAL
+    CM_BUILDTYPE := OFFICIAL
     CM_EXTRAVERSION :=
 endif
 
@@ -285,12 +279,12 @@ endif
 
 ifeq ($(CM_BUILDTYPE), RELEASE)
     ifndef TARGET_VENDOR_RELEASE_BUILD_ID
-        CM_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR).$(PRODUCT_VERSION_MAINTENANCE)$(PRODUCT_VERSION_DEVICE_SPECIFIC)-$(CM_BUILD)
+        CM_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_DEVICE_SPECIFIC)-$(CM_BUILD)
     else
         ifeq ($(TARGET_BUILD_VARIANT),user)
-            CM_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR)-$(TARGET_VENDOR_RELEASE_BUILD_ID)-$(CM_BUILD)
+            CM_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_DEVICE_SPECIFIC)-$(CM_BUILD)
         else
-            CM_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR).$(PRODUCT_VERSION_MAINTENANCE)$(PRODUCT_VERSION_DEVICE_SPECIFIC)-$(CM_BUILD)
+            CM_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_DEVICE_SPECIFIC)-$(CM_BUILD)
         endif
     endif
 else
@@ -298,10 +292,8 @@ else
 endif
 
 PRODUCT_PROPERTY_OVERRIDES += \
-  ro.cm.version=$(CM_VERSION) \
+  ro.minimal.version=$(CM_VERSION) \
   ro.cm.releasetype=$(CM_BUILDTYPE) \
-  ro.modversion=$(CM_VERSION) \
-  ro.cmlegal.url=https://cyngn.com/legal/privacy-policy
 
 -include vendor/cm-priv/keys/keys.mk
 
